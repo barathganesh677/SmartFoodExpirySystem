@@ -1,0 +1,1 @@
+﻿ALTER TABLE FoodItems ADD Category NVARCHAR(50) NOT NULL DEFAULT 'Other';

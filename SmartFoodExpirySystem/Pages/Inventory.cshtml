@@ -1,0 +1,374 @@
+﻿@page
+@model SmartFoodExpirySystem.Pages.InventoryModel
+@{
+    ViewData["Title"] = "Inventory";
+    Layout = "/Pages/Shared/_Layout.cshtml";
+}
+
+<style>
+    .inv-toolbar {
+        background: #ffffff;
+        border-radius: 18px;
+        padding: 1rem 1.25rem;
+        box-shadow: 0 6px 18px rgba(20, 90, 60, 0.06);
+        margin-bottom: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+        .inv-toolbar form {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .inv-toolbar .form-control {
+            border-radius: 10px;
+            border: 1.5px solid #e3e9e5;
+            background-color: #f9fbfa;
+        }
+
+            .inv-toolbar .form-control:focus {
+                border-color: #38ef7d;
+                box-shadow: 0 0 0 3px rgba(56, 239, 125, 0.2);
+            }
+
+    .btn-filter {
+        background: linear-gradient(135deg, #11998e, #38ef7d);
+        border: none;
+        color: #fff;
+        font-weight: 600;
+        border-radius: 10px;
+        padding: 0.5rem 1.1rem;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+        .btn-filter:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(17, 153, 142, 0.3);
+            color: #fff;
+        }
+
+    .btn-add {
+        background: linear-gradient(135deg, #145c34, #2e8b57);
+        border: none;
+        color: #fff;
+        font-weight: 700;
+        border-radius: 10px;
+        padding: 0.55rem 1.2rem;
+        box-shadow: 0 8px 18px rgba(20, 90, 60, 0.25);
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+        .btn-add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 22px rgba(20, 90, 60, 0.32);
+            color: #fff;
+        }
+
+    /* ---- card grid, no horizontal scroll ---- */
+    .inv-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+        gap: 1.25rem;
+    }
+
+    .item-card {
+        position: relative;
+        background: #fff;
+        border-radius: 16px;
+        padding: 1.2rem 1.25rem 1.1rem;
+        box-shadow: 0 4px 14px rgba(20, 90, 60, 0.07);
+        overflow: hidden;
+        opacity: 0;
+        transform: translateY(14px);
+        animation: cardIn 0.45s ease forwards;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+        .item-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 16px 30px rgba(20, 90, 60, 0.15);
+        }
+
+        .item-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+        }
+
+    .status-fresh::before {
+        background: linear-gradient(90deg, #11998e, #38ef7d);
+    }
+
+    .status-warning::before {
+        background: linear-gradient(90deg, #f7971e, #ffd200);
+    }
+
+    .status-expired::before {
+        background: linear-gradient(90deg, #eb3349, #f45c43);
+    }
+
+    @@keyframes cardIn {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .item-card .badge-danger {
+        animation: pulseGlow 1.8s ease-in-out infinite;
+    }
+
+    @@keyframes pulseGlow {
+        0%, 100% {
+            box-shadow: 0 0 0 0 rgba(235, 51, 73, 0.35);
+        }
+
+        50% {
+            box-shadow: 0 0 0 6px rgba(235, 51, 73, 0);
+        }
+    }
+
+    .item-card-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 0.6rem;
+    }
+
+    .item-name {
+        font-weight: 700;
+        font-size: 1.05rem;
+        color: #1f2d27;
+        line-height: 1.2;
+    }
+
+    .item-id {
+        font-size: 0.72rem;
+        color: #9aa6a0;
+        font-weight: 600;
+    }
+
+    .category-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 0.3rem 0.65rem;
+        border-radius: 50px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        white-space: nowrap;
+        margin-bottom: 0.7rem;
+    }
+
+    .item-stats {
+        display: flex;
+        justify-content: space-between;
+        background: #f8faf9;
+        border-radius: 10px;
+        padding: 0.55rem 0.7rem;
+        margin-bottom: 0.6rem;
+    }
+
+        .item-stats div {
+            text-align: center;
+            flex: 1;
+        }
+
+        .item-stats .stat-label {
+            font-size: 0.66rem;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: #8a9690;
+            display: block;
+        }
+
+        .item-stats .stat-value {
+            font-weight: 700;
+            color: #28392f;
+            font-size: 0.88rem;
+        }
+
+    .item-dates {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.78rem;
+        color: #5e6e66;
+        margin-bottom: 0.7rem;
+    }
+
+        .item-dates span strong {
+            color: #2f4338;
+            display: block;
+            font-size: 0.82rem;
+        }
+
+    .item-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.8rem;
+    }
+
+    .days-fresh {
+        color: #15803d;
+        font-weight: 700;
+        font-size: 0.85rem;
+    }
+
+    .days-soon {
+        color: #d97706;
+        font-weight: 700;
+        font-size: 0.85rem;
+    }
+
+    .days-expired {
+        color: #dc2626;
+        font-weight: 700;
+        font-size: 0.85rem;
+    }
+
+    .item-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+        .item-actions .btn-sm {
+            flex: 1;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: #6b7a72;
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 4px 14px rgba(20, 90, 60, 0.06);
+    }
+
+        .empty-state .empty-icon {
+            font-size: 2.4rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+</style>
+
+@functions {
+    (string Icon, string Text, string Bg) CategoryStyle(string category) => category switch
+    {
+        "Dairy" => ("🥛", "#1d4ed8", "#dbeafe"),
+        "Vegetables" => ("🥦", "#15803d", "#dcfce7"),
+        "Fruits" => ("🍎", "#b91c1c", "#fee2e2"),
+        "Grains" => ("🌾", "#a16207", "#fef3c7"),
+        "Meat" => ("🍗", "#9a3412", "#ffedd5"),
+        "Snacks" => ("🍪", "#7e22ce", "#f3e8ff"),
+        "Beverages" => ("🥤", "#0e7490", "#cffafe"),
+        _ => ("📦", "#475569", "#f1f5f9")
+    };
+}
+
+<div class="inv-toolbar">
+    <form method="get">
+        <input type="text" name="search" value="@Model.SearchTerm"
+               class="form-control" placeholder="🔍 Search item..." style="width:200px;" />
+
+        <select name="category" class="form-control" style="width:170px;">
+            <option value="">All Categories</option>
+            <option value="Dairy" selected="@(Model.CategoryFilter == "Dairy")">🥛 Dairy</option>
+            <option value="Vegetables" selected="@(Model.CategoryFilter == "Vegetables")">🥦 Vegetables</option>
+            <option value="Fruits" selected="@(Model.CategoryFilter == "Fruits")">🍎 Fruits</option>
+            <option value="Grains" selected="@(Model.CategoryFilter == "Grains")">🌾 Grains</option>
+            <option value="Meat" selected="@(Model.CategoryFilter == "Meat")">🍗 Meat</option>
+            <option value="Snacks" selected="@(Model.CategoryFilter == "Snacks")">🍪 Snacks</option>
+            <option value="Beverages" selected="@(Model.CategoryFilter == "Beverages")">🥤 Beverages</option>
+            <option value="Other" selected="@(Model.CategoryFilter == "Other")">📦 Other</option>
+        </select>
+
+        <button type="submit" class="btn-filter">Filter</button>
+    </form>
+
+    <a href="/AddFoodItem" class="btn-add">➕ Add Item</a>
+</div>
+
+@if (Model.Items.Any())
+{
+    <div class="inv-grid">
+        @{
+            int cardIndex = 0;
+        }
+        @foreach (var item in Model.Items)
+        {
+            cardIndex++;
+            int daysLeft = (item.ExpiryDate.Date - DateTime.Today).Days;
+            var cat = CategoryStyle(item.Category);
+            string daysClass = daysLeft < 0 ? "days-expired" : daysLeft <= 2 ? "days-soon" : "days-fresh";
+            string statusAccent = item.Status == "Expired" ? "status-expired" :
+                                   item.Status == "Expiring Today" ? "status-warning" : "status-fresh";
+            <div class="item-card @statusAccent" style="animation-delay:@(cardIndex * 0.05)s">
+                <div class="item-card-head">
+                    <div>
+                        <div class="item-name">@item.ItemName</div>
+                        <div class="item-id">#@item.ItemId</div>
+                    </div>
+                    <span class="badge @(item.Status == "Expired" ? "badge-danger" :
+                                                                                                 item.Status == "Expiring Today" ? "badge-warning" :
+                                                                                                 "badge-success")">
+                        @item.Status
+                    </span>
+                </div>
+
+                <span class="category-chip" style="color:@cat.Text; background-color:@cat.Bg;">
+                    @cat.Icon @item.Category
+                </span>
+
+                <div class="item-stats">
+                    <div>
+                        <span class="stat-label">Quantity</span>
+                        <span class="stat-value">@item.Quantity</span>
+                    </div>
+                    <div>
+                        <span class="stat-label">Price</span>
+                        <span class="stat-value">₹@item.Price.ToString("F2")</span>
+                    </div>
+                </div>
+
+                <div class="item-dates">
+                    <span>Purchased<strong>@item.PurchaseDate.ToString("dd MMM yyyy")</strong></span>
+                    <span>Expires<strong>@item.ExpiryDate.ToString("dd MMM yyyy")</strong></span>
+                </div>
+
+                <div class="item-footer">
+                    <span class="@daysClass">@(daysLeft < 0 ? "Expired" : daysLeft + " days left")</span>
+                </div>
+
+                <div class="item-actions">
+                    <a href="/Inventory?markUsedId=@item.ItemId&search=@Model.SearchTerm&category=@Model.CategoryFilter"
+                       class="btn btn-sm btn-outline-success" title="Mark as Used">
+                        ✔ Used
+                    </a>
+                    <a href="/DeleteFoodItem?id=@item.ItemId"
+                       class="btn btn-sm btn-outline-danger"
+                       onclick="return confirm('Delete this item?')" title="Delete">
+                        🗑 Delete
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="empty-state">
+        <span class="empty-icon">📭</span>
+        No items found. Try a different search or add a new item.
+    </div>
+}

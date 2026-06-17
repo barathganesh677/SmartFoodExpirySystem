@@ -1,0 +1,61 @@
+﻿@page
+@model SmartFoodExpirySystem.Pages.ShoppingPlannerModel
+@{
+    ViewData["Title"] = "Shopping Planner";
+    Layout = "/Pages/Shared/_Layout.cshtml";
+}
+<div class="d-flex gap-2 mb-3">
+    <form method="post" asp-page-handler="AutoGenerate">
+        <button class="btn btn-warning">
+            <i class="bi bi-magic"></i> Auto-Generate from Expired
+        </button>
+    </form>
+</div>
+
+<!-- Manual Add -->
+<div class="card shadow-sm p-3 mb-4" style="max-width:450px;">
+    <h6 class="fw-bold mb-3">➕ Add Item Manually</h6>
+    <form method="post" asp-page-handler="Add">
+        <div class="mb-2">
+            <input asp-for="NewItem" class="form-control" placeholder="Item name" />
+        </div>
+        <div class="mb-2">
+            <input asp-for="NewQty" class="form-control" placeholder="Quantity needed" />
+        </div>
+        <button class="btn btn-success w-100">Add to List</button>
+    </form>
+</div>
+
+<!-- Shopping List Table -->
+<div class="card shadow-sm">
+    <table class="table table-hover align-middle mb-0">
+        <thead class="table-success">
+            <tr><th>#</th><th>Item</th><th>Qty Needed</th><th>Status</th><th>Action</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var s in Model.PlannerItems)
+            {
+                <tr>
+                    <td>@s.PlannerId</td>
+                    <td>@s.ItemName</td>
+                    <td>@s.QuantityNeeded</td>
+                    <td>
+                        <span class="badge @(s.Status == "Purchased" ? "bg-success" : "bg-secondary")">
+                            @s.Status
+                        </span>
+                    </td>
+                    <td class="d-flex gap-1">
+                        <a href="/ShoppingPlanner?markId=@s.PlannerId" class="btn btn-sm btn-outline-success">
+                            ✔ Bought
+                        </a>
+                        <a href="/ShoppingPlanner?deleteId=@s.PlannerId"
+                           class="btn btn-sm btn-outline-danger"
+                           onclick="return confirm('Remove?')">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,237 @@
+﻿@page
+@model SmartFoodExpirySystem.Pages.ReportsModel
+@using System.Text.Json
+@{
+    ViewData["Title"] = "Reports";
+    Layout = "/Pages/Shared/_Layout.cshtml";
+}
+
+<style>
+    .stat-card {
+        border: none;
+        border-radius: 16px;
+        padding: 1.5rem;
+        position: relative;
+        overflow: hidden;
+        color: #fff;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-card .stat-icon {
+            font-size: 1.9rem;
+            position: absolute;
+            top: 1rem;
+            right: 1.1rem;
+            opacity: 0.85;
+        }
+
+        .stat-card .stat-value {
+            font-size: 2.1rem;
+            font-weight: 700;
+            line-height: 1.1;
+        }
+
+        .stat-card .stat-label {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 0.25rem;
+        }
+
+    .bg-total {
+        background: linear-gradient(135deg, #11998e, #38ef7d);
+    }
+
+    .bg-expired {
+        background: linear-gradient(135deg, #eb3349, #f45c43);
+    }
+
+    .bg-waste {
+        background: linear-gradient(135deg, #f7971e, #ffd200);
+        color: #3a2b00;
+    }
+
+    .bg-value {
+        background: linear-gradient(135deg, #4364f7, #6fb1fc);
+    }
+
+    .chart-card {
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+    }
+
+    .table-card tbody tr {
+        transition: background-color 0.15s ease;
+    }
+
+        .table-card tbody tr:hover {
+            background-color: #f8f9fb;
+        }
+
+    .badge-added,
+    .badge-expired {
+        display: inline-block;
+        min-width: 2.2rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-align: center;
+    }
+
+    .badge-added {
+        background-color: #d1f7e0;
+        color: #0f7a3d;
+    }
+
+    .badge-expired {
+        background-color: #fde0e0;
+        color: #c62828;
+    }
+
+    .charts-row {
+        margin-top: 0.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .chart-card {
+        padding: 1.5rem !important;
+    }
+
+        .chart-card canvas {
+            margin-top: 0.75rem;
+        }
+</style>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card bg-total">
+            <span class="stat-icon">📦</span>
+            <div class="stat-value">@Model.Total</div>
+            <div class="stat-label">Total Items</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card bg-expired">
+            <span class="stat-icon">⚠️</span>
+            <div class="stat-value">@Model.Expired</div>
+            <div class="stat-label">Expired Items</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card bg-waste">
+            <span class="stat-icon">🗑️</span>
+            <div class="stat-value">@Model.WastePercent%</div>
+            <div class="stat-label">Food Waste</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card bg-value">
+            <span class="stat-icon">💰</span>
+            <div class="stat-value">₹@Model.TotalValue</div>
+            <div class="stat-label">Total Value</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-5 charts-row">
+    <div class="col-md-5">
+        <div class="card chart-card h-100">
+            <h6 class="fw-bold mb-3">🥧 Inventory Status</h6>
+            <canvas id="statusPieChart" height="220"></canvas>
+        </div>
+    </div>
+    <div class="col-md-7">
+        <div class="card chart-card h-100">
+            <h6 class="fw-bold mb-3">📊 Monthly Trend</h6>
+            <canvas id="monthlyBarChart" height="220"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="card chart-card table-card p-3">
+    <h6 class="fw-bold mb-3">📅 Monthly Summary</h6>
+    <table class="table align-middle mb-0">
+        <thead class="table-light">
+            <tr>
+                <th>Month</th>
+                <th>Items Added</th>
+                <th>Expired</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in Model.MonthlySummary)
+            {
+                <tr>
+                    <td>@row.Month</td>
+                    <td><span class="badge-added">@row.Added</span></td>
+                    <td><span class="badge-expired">@row.Expired</span></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+    // ---- Pie chart: Fresh vs Expired ----
+    const fresh = @Model.Total - @Model.Expired;
+    const expired = @Model.Expired;
+
+    new Chart(document.getElementById('statusPieChart'), {
+    type: 'pie',
+    data: {
+    labels: ['Fresh Items', 'Expired Items'],
+    datasets: [{
+    data: [fresh, expired],
+    backgroundColor: ['#38ef7d', '#eb3349'],
+    borderColor: '#fff',
+    borderWidth: 2,
+    hoverOffset: 10
+    }]
+    },
+    options: {
+    responsive: true,
+    plugins: {
+    legend: { position: 'bottom' },
+    tooltip: {
+    callbacks: {
+    label: function (ctx) {
+    const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+    const pct = total ? ((ctx.parsed / total) * 100).toFixed(1) : 0;
+    return ctx.label + ': ' + ctx.parsed + ' (' + pct + '%)';
+    }
+    }
+    }
+    }
+    }
+    });
+
+    // ---- Bar chart: monthly Added vs Expired ----
+    const months = @Html.Raw(JsonSerializer.Serialize(Model.MonthlySummary.Select(m => m.Month)));
+    const added = @Html.Raw(JsonSerializer.Serialize(Model.MonthlySummary.Select(m => m.Added)));
+    const expiredArr = @Html.Raw(JsonSerializer.Serialize(Model.MonthlySummary.Select(m => m.Expired)));
+
+    new Chart(document.getElementById('monthlyBarChart'), {
+    type: 'bar',
+    data: {
+    labels: months,
+    datasets: [
+    { label: 'Added', data: added, backgroundColor: '#6fb1fc', borderRadius: 6 },
+    { label: 'Expired', data: expiredArr, backgroundColor: '#f45c43', borderRadius: 6 }
+    ]
+    },
+    options: {
+    responsive: true,
+    plugins: { legend: { position: 'bottom' } },
+    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+    }
+    });
+</script>

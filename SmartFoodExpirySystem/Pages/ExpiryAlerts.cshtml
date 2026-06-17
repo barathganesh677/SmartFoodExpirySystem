@@ -1,0 +1,160 @@
+﻿@page
+@model SmartFoodExpirySystem.Pages.ExpiryAlertsModel
+@{
+    ViewData["Title"] = "Expiry Alerts";
+    Layout = "/Pages/Shared/_Layout.cshtml";
+
+    var today = DateTime.Today;
+
+    var expired = Model.Expired
+        .OrderBy(x => x.ExpiryDate)
+        .ToList();
+
+    var expiresToday = Model.ExpiringSoon
+        .Where(x => (x.ExpiryDate.Date - today).Days == 0)
+        .OrderBy(x => x.ExpiryDate)
+        .ToList();
+
+    var expiresIn1Day = Model.ExpiringSoon
+        .Where(x => (x.ExpiryDate.Date - today).Days == 1)
+        .OrderBy(x => x.ExpiryDate)
+        .ToList();
+
+    var expiresIn2Days = Model.ExpiringSoon
+        .Where(x => (x.ExpiryDate.Date - today).Days == 2)
+        .OrderBy(x => x.ExpiryDate)
+        .ToList();
+
+    var expiresIn3Days = Model.ExpiringSoon
+        .Where(x => (x.ExpiryDate.Date - today).Days == 3)
+        .OrderBy(x => x.ExpiryDate)
+        .ToList();
+
+    var after4Days = Model.ExpiringSoon
+        .Where(x => (x.ExpiryDate.Date - today).Days > 3)
+        .OrderBy(x => x.ExpiryDate)
+        .ToList();
+}
+
+@if (expired.Any())
+{
+    <h5 class="text-danger mb-2">🔴 Already Expired</h5>
+    <div class="row g-3 mb-4">
+        @foreach (var item in expired)
+        {
+            var d = (item.ExpiryDate.Date - today).Days;
+            <div class="col-md-4">
+                <div class="card border-danger shadow-sm">
+                    <div class="card-body">
+                        <h6 class="fw-bold">@item.ItemName</h6>
+                        <p class="mb-1 text-muted">@item.Quantity | ₹@item.Price</p>
+                        <span class="badge bg-danger">
+                            Expired @Math.Abs(d) day@(Math.Abs(d) == 1 ? "" : "s") ago
+                        </span>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@if (expiresToday.Any())
+{
+    <h5 class="text-warning mb-2">🟠 Expires Today</h5>
+    <div class="row g-3 mb-4">
+        @foreach (var item in expiresToday)
+        {
+            <div class="col-md-4">
+                <div class="card border-warning shadow-sm">
+                    <div class="card-body">
+                        <h6 class="fw-bold">@item.ItemName</h6>
+                        <p class="mb-1 text-muted">@item.Quantity | ₹@item.Price</p>
+                        <span class="badge bg-warning text-dark">Expires Today</span>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@if (expiresIn1Day.Any())
+{
+    <h5 class="text-warning mb-2">🟡 Expires in 1 Day</h5>
+    <div class="row g-3 mb-4">
+        @foreach (var item in expiresIn1Day)
+        {
+            <div class="col-md-4">
+                <div class="card border-warning shadow-sm">
+                    <div class="card-body">
+                        <h6 class="fw-bold">@item.ItemName</h6>
+                        <p class="mb-1 text-muted">@item.Quantity | ₹@item.Price</p>
+                        <span class="badge bg-warning text-dark">Expires in 1 day</span>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@if (expiresIn2Days.Any())
+{
+    <h5 class="text-warning mb-2">🟡 Expires in 2 Days</h5>
+    <div class="row g-3 mb-4">
+        @foreach (var item in expiresIn2Days)
+        {
+            <div class="col-md-4">
+                <div class="card border-warning shadow-sm">
+                    <div class="card-body">
+                        <h6 class="fw-bold">@item.ItemName</h6>
+                        <p class="mb-1 text-muted">@item.Quantity | ₹@item.Price</p>
+                        <span class="badge bg-warning text-dark">Expires in 2 days</span>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@if (expiresIn3Days.Any())
+{
+    <h5 class="text-warning mb-2">🟡 Expires in 3 Days</h5>
+    <div class="row g-3 mb-4">
+        @foreach (var item in expiresIn3Days)
+        {
+            <div class="col-md-4">
+                <div class="card border-warning shadow-sm">
+                    <div class="card-body">
+                        <h6 class="fw-bold">@item.ItemName</h6>
+                        <p class="mb-1 text-muted">@item.Quantity | ₹@item.Price</p>
+                        <span class="badge bg-warning text-dark">Expires in 3 days</span>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@if (after4Days.Any())
+{
+    <h5 class="text-primary mb-2">🔵 Expires After 3 Days</h5>
+    <div class="row g-3 mb-4">
+        @foreach (var item in after4Days)
+        {
+            var d = (item.ExpiryDate.Date - today).Days;
+            <div class="col-md-4">
+                <div class="card border-primary shadow-sm">
+                    <div class="card-body">
+                        <h6 class="fw-bold">@item.ItemName</h6>
+                        <p class="mb-1 text-muted">@item.Quantity | ₹@item.Price</p>
+                        <span class="badge bg-primary">Expires in @d day@(d == 1 ? "" : "s")</span>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@if (!expired.Any() && !expiresToday.Any() && !expiresIn1Day.Any() && !expiresIn2Days.Any() && !expiresIn3Days.Any() && !after4Days.Any())
+{
+    <div class="alert alert-success">✅ All items are fresh! No alerts right now.</div>
+}

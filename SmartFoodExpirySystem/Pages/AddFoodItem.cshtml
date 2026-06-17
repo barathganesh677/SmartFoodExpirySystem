@@ -1,0 +1,225 @@
+﻿@page
+@model SmartFoodExpirySystem.Pages.AddFoodItemModel
+@{
+    ViewData["Title"] = "Add Food Item";
+    Layout = "/Pages/Shared/_Layout.cshtml";
+}
+
+<style>
+    .addfood-wrap {
+        position: relative;
+        min-height: 78vh;
+        padding: 2.5rem 1rem;
+        border-radius: 24px;
+        overflow: hidden;
+        background: radial-gradient(circle at 85% 15%, rgba(56, 239, 125, 0.18), transparent 45%), radial-gradient(circle at 10% 85%, rgba(17, 153, 142, 0.16), transparent 50%), linear-gradient(160deg, #f4f9f4 0%, #eaf4ec 55%, #f7f3e8 100%);
+    }
+
+        /* soft decorative blobs */
+        .addfood-wrap::before,
+        .addfood-wrap::after {
+            content: "";
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(50px);
+            z-index: 0;
+        }
+
+        .addfood-wrap::before {
+            width: 260px;
+            height: 260px;
+            top: -60px;
+            right: -40px;
+            background: linear-gradient(135deg, #38ef7d, #11998e);
+            opacity: 0.25;
+        }
+
+        .addfood-wrap::after {
+            width: 220px;
+            height: 220px;
+            bottom: -50px;
+            left: -30px;
+            background: linear-gradient(135deg, #ffd200, #f7971e);
+            opacity: 0.18;
+        }
+
+    /* faint repeating leaf pattern, hand-drawn SVG, sits behind everything */
+    .addfood-pattern {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        opacity: 0.5;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%2311998e' stroke-width='1.4' opacity='0.18'%3E%3Cpath d='M20 90c0-25 15-40 35-40'/%3E%3Cpath d='M20 90c10-5 15-15 15-30'/%3E%3Ccircle cx='95' cy='30' r='9'/%3E%3Cpath d='M95 39v14'/%3E%3C/g%3E%3C/svg%3E");
+        background-size: 120px 120px;
+    }
+
+    .addfood-emoji {
+        position: absolute;
+        font-size: 2.1rem;
+        opacity: 0.16;
+        z-index: 0;
+        animation: floatY 6s ease-in-out infinite;
+        user-select: none;
+    }
+
+    @@keyframes floatY {
+        0%, 100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-14px);
+        }
+    }
+
+    .addfood-card {
+        position: relative;
+        z-index: 1;
+        max-width: 600px;
+        margin: 0 auto;
+        background: rgba(255, 255, 255, 0.82);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        border-radius: 22px;
+        box-shadow: 0 18px 40px rgba(20, 90, 60, 0.12);
+        padding: 2.25rem 2rem;
+    }
+
+        .addfood-card .form-intro {
+            margin-bottom: 1.6rem;
+        }
+
+            .addfood-card .form-intro h5 {
+                font-weight: 700;
+                color: #0f5132;
+                margin-bottom: 0.2rem;
+            }
+
+            .addfood-card .form-intro p {
+                color: #5b6b63;
+                font-size: 0.9rem;
+                margin-bottom: 0;
+            }
+
+        .addfood-card .form-label {
+            font-weight: 600;
+            color: #21412f;
+            font-size: 0.92rem;
+        }
+
+        .addfood-card .form-control,
+        .addfood-card select.form-control {
+            border-radius: 12px;
+            border: 1.5px solid #dde7e0;
+            padding: 0.65rem 0.9rem;
+            background-color: #fff;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+            .addfood-card .form-control:focus,
+            .addfood-card select.form-control:focus {
+                border-color: #38ef7d;
+                box-shadow: 0 0 0 3px rgba(56, 239, 125, 0.2);
+                outline: none;
+            }
+
+    .addfood-submit {
+        border: none;
+        border-radius: 12px;
+        padding: 0.8rem 1rem;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+        background: linear-gradient(135deg, #11998e, #38ef7d);
+        color: #fff;
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+        box-shadow: 0 10px 22px rgba(17, 153, 142, 0.28);
+    }
+
+        .addfood-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 28px rgba(17, 153, 142, 0.35);
+            color: #fff;
+        }
+
+    .addfood-alert {
+        max-width: 600px;
+        margin: 0 auto 1.25rem auto;
+        border-radius: 14px;
+        border: none;
+        font-weight: 500;
+    }
+</style>
+
+<div class="addfood-wrap">
+    <div class="addfood-pattern"></div>
+    <span class="addfood-emoji" style="top:8%; left:6%;">🥦</span>
+    <span class="addfood-emoji" style="top:18%; left:88%; animation-delay: 1.2s;">🍎</span>
+    <span class="addfood-emoji" style="top:78%; left:10%; animation-delay: 2.4s;">🥛</span>
+    <span class="addfood-emoji" style="top:85%; left:90%; animation-delay: 0.6s;">🍞</span>
+
+    @if (Model.Success)
+    {
+        <div class="alert alert-success addfood-alert">✅ Item added successfully!</div>
+    }
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger addfood-alert">@Model.ErrorMessage</div>
+    }
+
+    <div class="addfood-card">
+        <div class="form-intro">
+            <h5>🧺 New Grocery Item</h5>
+            <p>Track what's fresh, reduce what's wasted.</p>
+        </div>
+        <form method="post">
+            @Html.AntiForgeryToken()
+            <div class="mb-3">
+                <label class="form-label">Item Name</label>
+                <input asp-for="Input.ItemName" class="form-control" placeholder="e.g. Milk" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Category</label>
+                <select asp-for="Input.Category" class="form-control">
+                    <option value="Dairy">🥛 Dairy</option>
+                    <option value="Vegetables">🥦 Vegetables</option>
+                    <option value="Fruits">🍎 Fruits</option>
+                    <option value="Grains">🌾 Grains</option>
+                    <option value="Meat">🍗 Meat</option>
+                    <option value="Snacks">🍪 Snacks</option>
+                    <option value="Beverages">🥤 Beverages</option>
+                    <option value="Other">📦 Other</option>
+                </select>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Quantity</label>
+                        <input asp-for="Input.Quantity" class="form-control" placeholder="e.g. 2 litres" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Price (₹)</label>
+                        <input asp-for="Input.Price" class="form-control" type="number" step="0.01" />
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Purchase Date</label>
+                        <input asp-for="Input.PurchaseDate" class="form-control" type="date" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Expiry Date</label>
+                        <input asp-for="Input.ExpiryDate" class="form-control" type="date" />
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="addfood-submit w-100">➕ Add Item</button>
+        </form>
+    </div>
+</div>
