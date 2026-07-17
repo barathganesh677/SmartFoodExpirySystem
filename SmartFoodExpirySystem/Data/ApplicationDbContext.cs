@@ -20,6 +20,10 @@ namespace SmartFoodExpirySystem.Data
             modelBuilder.Entity<ShoppingPlanner>().ToTable("ShoppingPlanner");
             modelBuilder.Entity<User>().ToTable("Users");
             modelBuilder.Entity<FoodItem>().ToTable("FoodItems");
+
+            modelBuilder.Entity<FoodItem>()
+                .Property(f => f.Category)
+                .HasDefaultValue("Other");
         }
     }
 }

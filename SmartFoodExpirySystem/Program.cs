@@ -23,7 +23,8 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     try
     {
-        db.Database.EnsureCreated();
+        db.Database.EnsureDeleted();  // ← delete old db
+        db.Database.EnsureCreated(); // ← recreate with new schema
     }
     catch (Exception ex)
     {
