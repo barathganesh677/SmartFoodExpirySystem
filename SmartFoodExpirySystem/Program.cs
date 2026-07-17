@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SmartFoodExpirySystem.Data;
 
-// Fix inotify limit on Render free tier
 Environment.SetEnvironmentVariable("DOTNET_USE_POLLING_FILE_WATCHER", "true");
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,10 +8,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite("Data Source=smartfood.db"));
+    options.UseSqlite("Data Source=/app/smartfood.db"));
 
 builder.Services.AddDataProtection();
-
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
@@ -21,7 +19,6 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
     options.Cookie.SecurePolicy = CookieSecurePolicy.None;
 });
-
 builder.Services.AddAntiforgery(options =>
 {
     options.Cookie.SecurePolicy = CookieSecurePolicy.None;
@@ -34,7 +31,6 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     try
     {
-        db.Database.EnsureDeleted();
         db.Database.EnsureCreated();
     }
     catch (Exception ex)
