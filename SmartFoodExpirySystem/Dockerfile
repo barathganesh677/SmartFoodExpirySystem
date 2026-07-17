@@ -1,8 +1,10 @@
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-preview AS base
 WORKDIR /app
 EXPOSE 80
+ENV DOTNET_USE_POLLING_FILE_WATCHER=true
+ENV ASPNETCORE_URLS=http://+:80
 
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0-preview AS build
 WORKDIR /src
 COPY ["SmartFoodExpirySystem/SmartFoodExpirySystem.csproj", "SmartFoodExpirySystem/"]
 RUN dotnet restore "SmartFoodExpirySystem/SmartFoodExpirySystem.csproj"

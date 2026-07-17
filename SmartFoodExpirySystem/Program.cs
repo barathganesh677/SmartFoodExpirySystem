@@ -1,6 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using SmartFoodExpirySystem.Data;
 
+// Fix inotify limit on Render free tier
+Environment.SetEnvironmentVariable("DOTNET_USE_POLLING_FILE_WATCHER", "true");
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorPages();
@@ -8,7 +11,6 @@ builder.Services.AddRazorPages();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite("Data Source=smartfood.db"));
 
-// Fix antiforgery token on Render
 builder.Services.AddDataProtection();
 
 builder.Services.AddDistributedMemoryCache();
