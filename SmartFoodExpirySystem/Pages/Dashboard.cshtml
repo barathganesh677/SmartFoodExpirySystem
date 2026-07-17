@@ -3,636 +3,192 @@
 @{
     ViewData["Title"] = "Dashboard";
     Layout = "/Pages/Shared/_Layout.cshtml";
-    double pct = Model.TotalItems > 0 ? (double)Model.AvailableItems / Model.TotalItems * 100 : 0;
-    int pctRounded = (int)Math.Round(pct);
-    double circumference = 439.8;
-    double targetOffset = circumference * (1 - (pct / 100));
-    string offsetStr = targetOffset.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture);
+    var username = HttpContext.Session.GetString("Username");
 }
-
-<style>
-    @@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@@500;700&family=Inter:wght@@400;500;600&family=IBM+Plex+Mono:wght@@500&display=swap');
-
-    .sf-dash {
-        --leaf: #2e8b57;
-        --leaf-light: #3ddc84;
-        --amber: #f5a623;
-        --coral: #e6536b;
-        --cream: #f6f5f0;
-        --ink: #16241c;
-        background: var(--cream);
-        border-radius: 22px;
-        padding: 1.75rem;
-        font-family: 'Inter', sans-serif;
-        color: var(--ink);
-    }
-
-    .bento-top {
-        display: grid;
-        grid-template-columns: 1.1fr 1fr;
-        gap: 1.25rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .bento-bottom {
-        display: grid;
-        grid-template-columns: 1.4fr 1fr;
-        gap: 1.25rem;
-    }
-
-    @@media (max-width: 900px) {
-        .bento-top, .bento-bottom {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    .rise {
-        opacity: 0;
-        transform: translateY(16px);
-        animation: cardRise 0.55s ease forwards;
-    }
-
-    @@keyframes cardRise {
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .ring-card {
-        background: #ffffff;
-        border-radius: 20px;
-        padding: 1.75rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 1.5rem;
-        box-shadow: 0 10px 26px rgba(20, 70, 50, 0.08);
-    }
-
-    .ring-svg {
-        width: 160px;
-        height: 160px;
-        transform: rotate(-90deg);
-        flex-shrink: 0;
-    }
-
-    .ring-bg {
-        fill: none;
-        stroke: #eef2ef;
-        stroke-width: 14;
-    }
-
-    .ring-fg {
-        fill: none;
-        stroke: var(--leaf);
-        stroke-width: 14;
-        stroke-linecap: round;
-        transition: stroke-dashoffset 1.3s cubic-bezier(.4,0,.2,1);
-        filter: drop-shadow(0 0 6px rgba(46, 139, 87, 0.45));
-        animation: ringGlow 2.6s ease-in-out infinite;
-        animation-delay: 1.4s;
-    }
-
-    @@keyframes ringGlow {
-        0%, 100% {
-            filter: drop-shadow(0 0 4px rgba(46, 139, 87, 0.35));
-        }
-
-        50% {
-            filter: drop-shadow(0 0 11px rgba(46, 139, 87, 0.6));
-        }
-    }
-
-    .ring-wrap {
-        position: relative;
-        width: 160px;
-        height: 160px;
-    }
-
-        .ring-wrap svg {
-            position: absolute;
-            inset: 0;
-        }
-
-    .ring-center {
-        position: absolute;
-        inset: 0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-    }
-
-    .ring-pct {
-        font-family: 'Space Grotesk', sans-serif;
-        font-weight: 700;
-        font-size: 2.4rem;
-        line-height: 1;
-    }
-
-    .ring-pct-sign {
-        font-family: 'Space Grotesk', sans-serif;
-        font-weight: 700;
-        font-size: 1.2rem;
-    }
-
-    .ring-caption {
-        font-size: 0.78rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        color: #6b7a72;
-        margin-top: 2px;
-    }
-
-    .ring-meta h6 {
-        font-family: 'Space Grotesk', sans-serif;
-        font-weight: 700;
-        font-size: 1.1rem;
-        margin-bottom: 0.3rem;
-    }
-
-    .ring-meta p {
-        color: #6b7a72;
-        font-size: 0.88rem;
-        margin: 0;
-    }
-
-    .stat-stack {
-        display: flex;
-        flex-direction: column;
-        gap: 0.9rem;
-        justify-content: center;
-    }
-
-    .stat-bar {
-        background: #fff;
-        border-radius: 14px;
-        padding: 0.85rem 1.1rem;
-        display: flex;
-        align-items: center;
-        gap: 0.8rem;
-        box-shadow: 0 6px 16px rgba(20, 70, 50, 0.06);
-        border-left: 5px solid transparent;
-        opacity: 0;
-        transform: translateX(18px);
-        animation: barIn 0.5s ease forwards;
-        transition: transform 0.2s ease;
-    }
-
-        .stat-bar:hover {
-            transform: translateX(-2px);
-        }
-
-    @@keyframes barIn {
-        to {
-            opacity: 1;
-            transform: translateX(0);
-        }
-    }
-
-    .bar-leaf {
-        border-color: var(--leaf);
-    }
-
-    .bar-amber {
-        border-color: var(--amber);
-    }
-
-    .bar-coral {
-        border-color: var(--coral);
-    }
-
-    .bar-icon {
-        font-size: 1.4rem;
-    }
-
-    .bar-text {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .bar-value {
-        font-family: 'Space Grotesk', sans-serif;
-        font-weight: 700;
-        font-size: 1.35rem;
-        line-height: 1;
-    }
-
-    .bar-label {
-        font-size: 0.78rem;
-        color: #6b7a72;
-    }
-
-    .receipt-card {
-        background: #fff;
-        border-radius: 16px 16px 0 0;
-        padding: 1.5rem 1.5rem 1.6rem;
-        position: relative;
-        box-shadow: 0 10px 24px rgba(20, 70, 50, 0.07);
-    }
-
-        .receipt-card::after {
-            content: "";
-            position: absolute;
-            left: 0;
-            right: 0;
-            bottom: -13px;
-            height: 14px;
-            background-image: linear-gradient(135deg, var(--cream) 50%, transparent 50%), linear-gradient(45deg, var(--cream) 50%, transparent 50%);
-            background-size: 16px 16px;
-            background-position: bottom;
-            background-repeat: repeat-x;
-        }
-
-    .receipt-head {
-        font-family: 'Space Grotesk', sans-serif;
-        font-weight: 700;
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        margin-bottom: 0.9rem;
-        padding-bottom: 0.7rem;
-        border-bottom: 1px dashed #dfe6e1;
-    }
-
-    .receipt-sub {
-        font-size: 0.75rem;
-        color: #8a9690;
-        font-weight: 500;
-    }
-
-    .receipt-rows, .shopping-rows {
-        opacity: 0;
-        transform: translateY(8px);
-        animation: cardRise 0.5s ease forwards;
-        animation-delay: 0.5s;
-    }
-
-    .receipt-row {
-        font-family: 'IBM Plex Mono', monospace;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.55rem 0;
-        border-bottom: 1px dashed #eef1ef;
-        font-size: 0.88rem;
-    }
-
-    .receipt-tag {
-        font-family: 'Inter', sans-serif;
-        font-weight: 700;
-        font-size: 0.76rem;
-        padding: 0.3rem 0.65rem;
-        border-radius: 50px;
-        white-space: nowrap;
-    }
-
-    .tag-soon {
-        background: #fef3da;
-        color: #946200;
-    }
-
-    .tag-today {
-        background: var(--amber);
-        color: #3a2900;
-        animation: tagPulse 1.6s ease-in-out infinite;
-    }
-
-    @@keyframes tagPulse {
-        0%, 100% {
-            box-shadow: 0 0 0 0 rgba(245, 166, 35, 0.45);
-        }
-
-        50% {
-            box-shadow: 0 0 0 6px rgba(245, 166, 35, 0);
-        }
-    }
-
-    .shopping-card {
-        background: #fff;
-        border-radius: 16px;
-        padding: 1.5rem;
-        box-shadow: 0 10px 24px rgba(20, 70, 50, 0.07);
-    }
-
-    .shopping-head {
-        font-family: 'Space Grotesk', sans-serif;
-        font-weight: 700;
-        margin-bottom: 0.9rem;
-        padding-bottom: 0.7rem;
-        border-bottom: 1px solid #eef1ef;
-    }
-
-    .shopping-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.6rem;
-        padding: 0.55rem 0;
-        border-bottom: 1px solid #f5f6f5;
-        font-size: 0.9rem;
-    }
-
-        .shopping-row .item-name::before {
-            content: "🛒 ";
-        }
-
-    .status-chip {
-        background: #eef2f0;
-        color: #4b5b53;
-        font-weight: 600;
-        font-size: 0.76rem;
-        padding: 0.3rem 0.65rem;
-        border-radius: 50px;
-        white-space: nowrap;
-    }
-
-    .empty-msg {
-        color: #8a9690;
-        font-size: 0.9rem;
-        text-align: center;
-        padding: 1.2rem 0;
-        margin: 0;
-    }
-
-    .modal-overlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(15, 35, 25, 0.55);
-        backdrop-filter: blur(4px);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-        animation: overlayFade 0.3s ease;
-    }
-
-    @@keyframes overlayFade {
-        from {
-            opacity: 0;
-        }
-
-        to {
-            opacity: 1;
-        }
-    }
-
-    .modal-box {
-        position: relative;
-        background: #fff;
-        border-radius: 18px;
-        padding: 2rem 1.8rem;
-        max-width: 380px;
-        width: 90%;
-        text-align: center;
-        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.25);
-        animation: modalPop 0.4s cubic-bezier(.34, 1.56, .64, 1);
-        font-family: 'Inter', sans-serif;
-    }
-
-    @@keyframes modalPop {
-        from {
-            opacity: 0;
-            transform: scale(0.8) translateY(20px);
-        }
-
-        to {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-        }
-    }
-
-    .modal-box h5 {
-        font-family: 'Space Grotesk', sans-serif;
-        font-weight: 700;
-    }
-
-    .modal-icon {
-        font-size: 2.6rem;
-        display: inline-block;
-        animation: bellSwing 1.4s ease-in-out infinite;
-    }
-
-    @@keyframes bellSwing {
-        0%, 100% {
-            transform: rotate(0);
-        }
-
-        10%, 30% {
-            transform: rotate(-12deg);
-        }
-
-        20%, 40% {
-            transform: rotate(12deg);
-        }
-
-        50% {
-            transform: rotate(0);
-        }
-    }
-
-    .modal-list {
-        text-align: left;
-        margin: 1rem 0 1.2rem;
-        padding-left: 1.2rem;
-    }
-
-    .modal-btn {
-        border: none;
-        width: 100%;
-        background: linear-gradient(135deg, var(--leaf), var(--leaf-light));
-        color: #fff;
-        font-weight: 700;
-        padding: 0.7rem 1rem;
-        border-radius: 50px;
-        transition: transform 0.15s ease;
-        cursor: pointer;
-    }
-
-        .modal-btn:hover {
-            transform: translateY(-2px);
-        }
-
-    .modal-close {
-        position: absolute;
-        top: 10px;
-        right: 14px;
-        border: none;
-        background: transparent;
-        font-size: 1.6rem;
-        font-weight: 700;
-        color: #6b7a72;
-        cursor: pointer;
-        line-height: 1;
-    }
-
-    ::-webkit-scrollbar {
-        width: 8px;
-    }
-
-    ::-webkit-scrollbar-thumb {
-        background: #c1d5cb;
-        border-radius: 8px;
-    }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--leaf-light);
-        }
-</style>
-
 @if (Model.ExpiringTomorrow.Any())
 {
-    <div id="expiryModalOverlay" class="modal-overlay" onclick="closeExpiryModal(event)">
-        <div class="modal-box" onclick="event.stopPropagation()">
-            <button type="button" class="modal-close" onclick="closeExpiryModal()" aria-label="Close">×</button>
-            <div class="modal-icon">🔔</div>
-            <h5>Heads up!</h5>
-            <p>These items expire <strong>tomorrow</strong>:</p>
+    <div id="expiryModalOverlay" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-icon">⏰</div>
+            <h5>Heads up, @username!</h5>
+            <p style="color:#666;font-size:0.9rem;">These items expire <strong>tomorrow</strong>:</p>
             <ul class="modal-list">
                 @foreach (var item in Model.ExpiringTomorrow)
                 {
-                    <li>@item.ItemName <span class="text-muted">(@item.Quantity)</span></li>
+                    <li>@item.ItemName <span class="text-muted">— @item.Quantity</span></li>
                 }
             </ul>
-            <button type="button" class="modal-btn" onclick="closeExpiryModal()">
-                Got it
+            <button class="btn btn-success w-100"
+                    onclick="document.getElementById('expiryModalOverlay').style.display='none'">
+                Got it! ✓
             </button>
         </div>
     </div>
 }
 
-<div class="sf-dash">
-    <div class="bento-top">
-        <div class="ring-card rise">
-            <div class="ring-wrap">
-                <svg class="ring-svg" viewBox="0 0 180 180">
-                    <circle class="ring-bg" cx="90" cy="90" r="70"></circle>
-                    <circle class="ring-fg" cx="90" cy="90" r="70"
-                            stroke-dasharray="439.8"
-                            stroke-dashoffset="439.8"
-                            data-offset="@offsetStr"></circle>
-                </svg>
-                <div class="ring-center" style="transform: rotate(0deg);">
-                    <div><span class="ring-pct" data-value="@pctRounded">0</span><span class="ring-pct-sign">%</span></div>
-                    <span class="ring-caption">Fresh Stock</span>
-                </div>
-            </div>
-            <div class="ring-meta">
-                <h6>@(Model.TotalItems == 0 ? "No items yet" : "Pantry Overview")</h6>
-                <p>@Model.TotalItems total item@(Model.TotalItems == 1 ? "" : "s") tracked</p>
-            </div>
-        </div>
-
-        <div class="stat-stack">
-            <div class="stat-bar bar-leaf rise" style="animation-delay:0.15s;">
-                <span class="bar-icon">✅</span>
-                <div class="bar-text">
-                    <span class="bar-value" data-value="@Model.AvailableItems">0</span>
-                    <span class="bar-label">Available</span>
-                </div>
-            </div>
-            <div class="stat-bar bar-amber rise" style="animation-delay:0.3s;">
-                <span class="bar-icon">⏳</span>
-                <div class="bar-text">
-                    <span class="bar-value" data-value="@Model.ExpiringItems">0</span>
-                    <span class="bar-label">Expiring Soon</span>
-                </div>
-            </div>
-            <div class="stat-bar bar-coral rise" style="animation-delay:0.45s;">
-                <span class="bar-icon">🗑️</span>
-                <div class="bar-text">
-                    <span class="bar-value" data-value="@Model.ExpiredItems">0</span>
-                    <span class="bar-label">Expired</span>
-                </div>
-            </div>
+<!-- Stat Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="stat-card bg-green">
+            <span class="stat-icon">📦</span>
+            <div class="number">@Model.TotalItems</div>
+            <div class="label">Total Items</div>
         </div>
     </div>
-
-    <div class="bento-bottom">
-        <div class="receipt-card rise" style="animation-delay:0.2s;">
-            <div class="receipt-head">
-                <span>🧾 Expiring Soon</span>
-                <span class="receipt-sub">next 3 days</span>
-            </div>
-            @if (Model.ExpiringList.Any())
-            {
-                <div class="receipt-rows">
-                    @foreach (var item in Model.ExpiringList)
-                    {
-                        int days = (item.ExpiryDate.Date - DateTime.Today).Days;
-                        <div class="receipt-row">
-                            <span>@item.ItemName</span>
-                            <span class="receipt-tag @(days == 0 ? "tag-today" : "tag-soon")">
-                                @(days == 0 ? "Today!" : days + "d left")
-                            </span>
-                        </div>
-                    }
-                </div>
-            }
-            else
-            {
-                <p class="empty-msg">🎉 All clear — nothing expiring soon.</p>
-            }
+    <div class="col-md-3">
+        <div class="stat-card bg-success">
+            <span class="stat-icon">✅</span>
+            <div class="number">@Model.AvailableItems</div>
+            <div class="label">Available</div>
         </div>
-
-        <div class="shopping-card rise" style="animation-delay:0.3s;">
-            <div class="shopping-head">🛒 Shopping List</div>
-            @if (Model.ShoppingList.Any())
-            {
-                <div class="shopping-rows">
-                    @foreach (var s in Model.ShoppingList)
-                    {
-                        <div class="shopping-row">
-                            <span class="item-name">@s.ItemName</span>
-                            <span class="status-chip">@s.Status</span>
-                        </div>
-                    }
-                </div>
-            }
-            else
-            {
-                <p class="empty-msg">Your shopping list is empty — nice job staying stocked!</p>
-            }
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card bg-warning">
+            <span class="stat-icon">⚠️</span>
+            <div class="number">@Model.ExpiringItems</div>
+            <div class="label">Expiring Soon</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card bg-danger">
+            <span class="stat-icon">❌</span>
+            <div class="number">@Model.ExpiredItems</div>
+            <div class="label">Expired</div>
         </div>
     </div>
 </div>
 
-<script>
-    function closeExpiryModal(event) {
-        if (event && event.target !== event.currentTarget) return;
-        var modal = document.getElementById('expiryModalOverlay');
-        if (modal) modal.style.display = 'none';
-    }
-
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') {
-            closeExpiryModal();
-        }
-    });
-
-    document.addEventListener('DOMContentLoaded', function () {
-        document.querySelectorAll('[data-value]').forEach(function (el) {
-            var target = parseInt(el.getAttribute('data-value'), 10) || 0;
-            var duration = 900;
-            var startTime = null;
-
-            function step(timestamp) {
-                if (!startTime) startTime = timestamp;
-                var progress = Math.min((timestamp - startTime) / duration, 1);
-                el.textContent = Math.floor(progress * target);
-                if (progress < 1) requestAnimationFrame(step);
-                else el.textContent = target;
+<!-- Visual Chart Row -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-title">📊 Item Status Overview</div>
+            @{
+                int total = Model.TotalItems > 0 ? Model.TotalItems : 1;
+                int availPct = (int)((double)Model.AvailableItems / total * 100);
+                int expiringPct = (int)((double)Model.ExpiringItems / total * 100);
+                int expiredPct = (int)((double)Model.ExpiredItems / total * 100);
             }
-            requestAnimationFrame(step);
-        });
+            <div style="margin-bottom:14px;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+                    <span style="font-size:0.84rem;font-weight:600;color:#166534;">✅ Available</span>
+                    <span style="font-size:0.84rem;font-weight:700;">@Model.AvailableItems (@availPct%)</span>
+                </div>
+                <div style="background:#e9ecef;border-radius:30px;height:10px;overflow:hidden;">
+                    <div style="width:@(availPct)%;height:100%;background:linear-gradient(90deg,#28a745,#5fd383);border-radius:30px;"></div>
+                </div>
+            </div>
+            <div style="margin-bottom:14px;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+                    <span style="font-size:0.84rem;font-weight:600;color:#92660a;">⚠️ Expiring Soon</span>
+                    <span style="font-size:0.84rem;font-weight:700;">@Model.ExpiringItems (@expiringPct%)</span>
+                </div>
+                <div style="background:#e9ecef;border-radius:30px;height:10px;overflow:hidden;">
+                    <div style="width:@(expiringPct)%;height:100%;background:linear-gradient(90deg,#ffc107,#ffd166);border-radius:30px;"></div>
+                </div>
+            </div>
+            <div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+                    <span style="font-size:0.84rem;font-weight:600;color:#991b1b;">❌ Expired</span>
+                    <span style="font-size:0.84rem;font-weight:700;">@Model.ExpiredItems (@expiredPct%)</span>
+                </div>
+                <div style="background:#e9ecef;border-radius:30px;height:10px;overflow:hidden;">
+                    <div style="width:@(expiredPct)%;height:100%;background:linear-gradient(90deg,#dc3545,#ff7b8a);border-radius:30px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-title">🍽️ Quick Actions</div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+                <a href="/AddFoodItem" class="btn btn-success">➕ Add New Food Item</a>
+                <a href="/Inventory" class="btn btn-warning">📦 View Inventory</a>
+                <a href="/ShoppingPlanner" class="btn"
+                   style="background:linear-gradient(135deg,#6f42c1,#b08df7);color:white;">
+                    🛒 Shopping Planner
+                </a>
+                <a href="/ExpiryAlerts" class="btn btn-danger">🔔 View Expiry Alerts</a>
+            </div>
+        </div>
+    </div>
+</div>
 
-        var ring = document.querySelector('.ring-fg');
-        if (ring) {
-            setTimeout(function () {
-                ring.style.strokeDashoffset = ring.getAttribute('data-offset');
-            }, 150);
-        }
-    });
-</script>
+<!-- Bottom Row -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-title">⚠️ Expiring Within 3 Days</div>
+            @if (Model.ExpiringList.Any())
+            {
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Qty</th>
+                            <th>Days Left</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.ExpiringList)
+                        {
+                            int days = (item.ExpiryDate.Date - DateTime.Today).Days;
+                            <tr>
+                                <td><strong>@item.ItemName</strong></td>
+                                <td class="text-muted">@item.Quantity</td>
+                                <td>
+                                    <span class="badge @(days == 0 ? "badge-danger" : "badge-warning")">
+                                        @(days == 0 ? "Today!" : days + "d left")
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div class="empty-state">
+                    <div class="empty-icon">🎉</div>
+                    <p>No items expiring soon!</p>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-title">🛒 Shopping List</div>
+            @if (Model.ShoppingList.Any())
+            {
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var s in Model.ShoppingList)
+                        {
+                            <tr>
+                                <td><strong>@s.ItemName</strong></td>
+                                <td>
+                                    <span class="badge @(s.Status == "Purchased" ? "badge-success" : "badge-secondary")">
+                                        @s.Status
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div class="empty-state">
+                    <div class="empty-icon">🛒</div>
+                    <p>Shopping list is empty.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
